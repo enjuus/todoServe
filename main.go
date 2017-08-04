@@ -9,6 +9,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"fmt"
+	"strconv"
 )
 
 type Todo struct {
@@ -44,15 +45,57 @@ func ViewHandler(w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, td)
 }
 
+// Write the given string array to the specified file, overwriting any lines
+// that were previously in the file.
+func writeFile( lines []*Todo ) {
+	file, err := os.Create( fileName ) //example of multiple results from a function where one is the error code
+	if err != nil {
+		panic( "could not open todo file" )
+	}
+	defer file.Close() //will call file's close function at the end of writeFile
+
+	w := bufio.NewWriter( file )
+	defer w.Flush() //interesting, two deferred funcs, one needs to be called first....
+
+	for _, each := range lines { //ignore the first param with "_"
+		fmt.Fprint( w, each.Line + "\n" )
+	}
+}
+
+func deleteFromFile(i int, t []*Todo) {
+	i = i - 1
+	if i < len(t) {
+		t = append(t[:i], t[i+1:]...) // https://github.com/golang/go/wiki/SliceTricks ??
+	}
+
+	writeFile(t)
+}
+
+func DeleteHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	i, _ := strconv.Atoi(vars["id"])
+	c := ReadFile()
+	deleteFromFile(i, c)
+	ViewHandler(w, r)
+}
+
 func AddHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Print("handler called")
 	value := r.FormValue("entry")
-	fmt.Printf("%s", value)
+	current := ReadFile()
+	current = append(current, &Todo{Line: value})
+	writeFile(current)
+	ViewHandler(w, r)
 }
 
 func main() {
 	r := mux.NewRouter()
-	r.HandleFunc("/todo", ViewHandler)
-	r.HandleFunc("/todo", AddHandler).Methods("POST")
+	r.HandleFunc("/", AddHandler).Methods("POST")
+	r.HandleFunc("/{id}", DeleteHandler)
+	r.HandleFunc("/", ViewHandler)
+	s := http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets/")))
+	r.PathPrefix("/assets/").Handler(s)
+	http.Handle("/", r)
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
 		log.Fatal(err)

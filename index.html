@@ -10,7 +10,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
     <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro" rel="stylesheet">
-    <title>enju</title>
+    <title>todo</title>
 
     <!-- Bootstrap core CSS -->
     <link href="assets/css/bootstrap.min.css" rel="stylesheet">
@@ -38,14 +38,14 @@
 
 <div class="container home">
     <h1>Todo</h1>
-    <form method="POST">
+    <form method="POST" action="/">
         <div>
-            <input type="text" name="entry"/>
+            <input type="text" name="entry" autofocus/>
             <input type="submit" value="add">
         </div>
     </form>
     {{range.}}
-    <p>{{.Line}} - <a href="delete/{{.Index}}">delete</a></p>
+    <p>{{.Line}} - <a href="/{{.Index}}">delete</a></p>
     {{end}}
 </div><!-- /.container -->
 
