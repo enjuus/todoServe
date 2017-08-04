@@ -9,7 +9,7 @@
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
     <meta name="description" content="">
     <meta name="author" content="">
-
+    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro" rel="stylesheet">
     <title>enju</title>
 
     <!-- Bootstrap core CSS -->
@@ -37,12 +37,17 @@
 <body cz-shortcut-listen="true">
 
 <div class="container home">
-    {{rande .}}
-        {{.Line}}
+    <h1>Todo</h1>
+    <form method="POST">
+        <div>
+            <input type="text" name="entry"/>
+            <input type="submit" value="add">
+        </div>
+    </form>
+    {{range.}}
+    <p>{{.Line}} - <a href="delete/{{.Index}}">delete</a></p>
     {{end}}
 </div><!-- /.container -->
-
-
 
 
 </body>

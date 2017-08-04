@@ -5,13 +5,18 @@ import (
 	"html/template"
 	"os"
 	"bufio"
+	"log"
+
+	"github.com/gorilla/mux"
+	"fmt"
 )
 
 type Todo struct {
-	Line string
+	Line 	string
+	Index 	int
 }
 
-const fileName = "/tmp/todo.dat"
+const fileName = "./todo.dat"
 func ReadFile() []*Todo {
 	file, err := os.Open(fileName)
 	if err != nil {
@@ -22,8 +27,10 @@ func ReadFile() []*Todo {
 	s := bufio.NewScanner(bufio.NewReader(file))
 
 	var tmp []*Todo
+	c := 1
 	for s.Scan() {
-		tmp = append(tmp, &Todo{Line: s.Text()})
+		tmp = append(tmp, &Todo{Line: s.Text(), Index: c})
+		c = c + 1
 	}
 
 	return tmp
@@ -37,8 +44,18 @@ func ViewHandler(w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, td)
 }
 
+func AddHandler(w http.ResponseWriter, r *http.Request) {
+	value := r.FormValue("entry")
+	fmt.Printf("%s", value)
+}
+
 func main() {
-	http.HandleFunc("/view", ViewHandler)
-	http.ListenAndServe(":8080", nil)
+	r := mux.NewRouter()
+	r.HandleFunc("/todo", ViewHandler)
+	r.HandleFunc("/todo", AddHandler).Methods("POST")
+	err := http.ListenAndServe(":8080", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 }
